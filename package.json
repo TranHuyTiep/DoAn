@@ -1,0 +1,32 @@
+{
+  "name": "doan",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "nodemon ./bin/www"
+  },
+  "dependencies": {
+    "bcrypt-nodejs": "^0.0.3",
+    "bignum": "0.12.5",
+    "body-parser": "~1.18.2",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "~1.4.3",
+    "crypto-js": "^3.1.9-1",
+    "debug": "~2.6.9",
+    "ejs": "~2.5.7",
+    "express": "~4.15.5",
+    "express-session": "^1.15.6",
+    "libsodium-wrappers": "0.5.4",
+    "morgan": "~1.9.0",
+    "mqtt": "^2.16.0",
+    "mysql": "^2.15.0",
+    "nodemailer": "^4.4.2",
+    "nodemon": "^1.14.11",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0",
+    "serve-favicon": "~2.4.5",
+    "socket.io": "^2.0.4",
+    "socket.mvc": "^0.2.0",
+    "systeminformation": "^3.37.4"
+  }
+}
