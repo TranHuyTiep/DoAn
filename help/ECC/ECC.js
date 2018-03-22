@@ -304,6 +304,7 @@ function create_cert(id,public_key_client,private_key_CA,public_key_CA) {
  * @returns {[null,null,null]}
  */
 function create_key_to_cert(private_key,cert) {
+    private_key = bignum(private_key)
     var P = bignum(cert.P), id = cert.id,s = bignum(cert.s)
     P = x_to_Point(P)
     public_key_CA = x_to_Point(bignum(cert.C))

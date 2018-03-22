@@ -5,6 +5,17 @@ var ecc = require('../help/ECC/ECC')
 var crypto = require('crypto-js')
 var config = require('../config/config')
 
+var strCertServer = fs.readFileSync(config.root_dir+config.jwt.cert).toString()
+var certServer  = crypto.AES.decrypt(strCertServer, config.jwt.password);
+var plaintext = certServer.toString(crypto.enc.Utf8);
+certServer = JSON.parse(plaintext)
+
+var strR = fs.readFileSync(config.root_dir+config.jwt.r).toString()
+var rServer  = crypto.AES.decrypt(strR, config.jwt.password);
+var plaintextR = rServer.toString(crypto.enc.Utf8);
+rServer = JSON.parse(plaintextR)
+console.log(rServer)
+
 client.subscribe('huytiep/certRPI',{ qos: 1,retain:false })
 
 module.exports = function (socket) {
@@ -32,15 +43,6 @@ module.exports = function (socket) {
                     case "huytiep/certRPI":
                         var nonceServer = Math.random().toString(16).substr(2, 8)
                         templ = nonceServer
-                        var strCertServer = fs.readFileSync(config.root_dir+config.jwt.cert).toString()
-                        var certServer  = crypto.AES.decrypt(strCertServer, config.jwt.password);
-                        var plaintext = certServer.toString(crypto.enc.Utf8);
-                        certServer = JSON.parse(plaintext)
-
-                        var strR = fs.readFileSync(config.root_dir+config.jwt.r).toString()
-                        var rServer  = crypto.AES.decrypt(strR, config.jwt.password);
-                        var plaintext = rServer.toString(crypto.enc.Utf8);
-                        rServer = JSON.parse(plaintext)
 
                         var privateServer = ecc.create_key_to_cert(rServer,certServer)
 
@@ -97,9 +99,9 @@ module.exports = function (socket) {
 // //
 // //
 // // // Encrypt
-// var string = fs.readFileSync(config.root_dir+config.jwt.r).toString()
-// // var ciphertext = crypto.AES.encrypt('115384283877462498079275081838378639864540036102372508519365666259500077010086', 'Aa23456');
-// // console.log(ciphertext.toString())
+// var string = fs.readFileSync('cert_PI').toString()
+// var ciphertext = crypto.AES.encrypt(JSON.stringify(JSON.parse(string).private_key), 'Aa123456');
+// console.log(ciphertext.toString())
 // // // Decrypt
 // var r  = crypto.AES.decrypt(string, 'Aa123456');
 // var plaintext = r.toString(crypto.enc.Utf8);

@@ -3,8 +3,18 @@ const si = require('systeminformation');
 var fs =  require('fs')
 var ecc = require('../help/ECC/ECC')
 var crypto = require('crypto-js')
+var config = require('../config/config')
 
 var client  = mqtt.connect('http://broker.mqttdashboard.com:1883',{clientId:'huytiep',cleanSession:true})
+
+var strCertRPI = fs.readFileSync(config.root_dir+'var1/cert').toString()
+var CertRPI  = crypto.AES.decrypt(strCertRPI, config.jwt.password);
+CertRPI = JSON.parse(CertRPI.toString(crypto.enc.Utf8));
+
+var strR = fs.readFileSync(config.root_dir+'var1/r').toString()
+var rRPI  = crypto.AES.decrypt(strR, config.jwt.password);
+var plaintextR = rRPI.toString(crypto.enc.Utf8);
+rRPI = JSON.parse(plaintextR)
 
 client.on('connect', function (connack) {
     var templ = ''
@@ -27,12 +37,10 @@ client.on('connect', function (connack) {
             case "huytiep/connectRPI":
                 var noncePI = Math.random().toString(16).substr(2, 8)
                 templ = noncePI
-                var certRPI = fs.readFileSync('cert_PI')
-                certRPI = JSON.parse(certRPI.toString())
 
                 var dataSend = {
                     noncePI:noncePI,
-                    certRPI:certRPI.cert,
+                    certRPI:CertRPI,
                     flag:'certRPI'
                 }
 
@@ -41,9 +49,7 @@ client.on('connect', function (connack) {
 
             case "huytiep/certServer":
 
-                var certRPI = fs.readFileSync('cert_PI')
-                certRPI = JSON.parse(certRPI.toString())
-                var privateKeyRPI = ecc.create_key_to_cert(certRPI.private_key,certRPI.cert)
+                var privateKeyRPI = ecc.create_key_to_cert(rRPI,CertRPI)
                 var certServer = JSON.parse(data)
                 var publicKeyServer = ecc.create_key_to_third_party(certServer.certServer)
                 verifyServer = certServer
@@ -52,7 +58,7 @@ client.on('connect', function (connack) {
                 pKey = crypto.PBKDF2(pKey[0].toString(),certServer.nonceServer+templ).toString();
 
                 macAuthen = JSON.stringify(certServer.certServer)+','
-                    +JSON.stringify(certRPI.cert)+','
+                    +JSON.stringify(CertRPI)+','
                     +certServer.nonceServer+','
                     +templ
                 macAuthen  = crypto.HmacSHA256(macAuthen,pKey).toString();
@@ -82,5 +88,3 @@ client.on('connect', function (connack) {
         }
     })
 })
-
-
