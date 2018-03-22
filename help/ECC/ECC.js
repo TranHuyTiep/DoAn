@@ -165,7 +165,7 @@ function scalar_mult(k, point){
 
 /**
  * tao khoa
- * @returns {*} {public_key,private_key}
+ * @returns {*} {public_key,r}
  */
 function make_keypair(){
     var private_key = bignum('')
@@ -227,7 +227,7 @@ function hash_message(message){
 function sign_message(private_key,message){
     var r = 0,s = 0
     var z = hash_message(message)
-// # private_key =  int(private_key,16)
+// # r =  int(r,16)
     while (r == 0 || s == 0){
         var k = curve.n.rand()
         var p = scalar_mult(k, [curve.X,curve.Y])
@@ -366,7 +366,7 @@ function make_public_key(private_key){
 
 // var x = make_keypair()
 // pub = x.public_key
-// pri = x.private_key
+// pri = x.r
 // var y = make_keypair()
 // var pub_y = y.public_key
 // var sign = sign_message(pri,'tranhuytiep')
@@ -376,9 +376,9 @@ function make_public_key(private_key){
 // var client1 = make_keypair()
 // var client2 = make_keypair()
 // var ca = make_keypair()
-// var private_key_CA=ca.private_key,public_key_CA = ca.public_key
-// var private_key1 = client1.private_key,public_key1 = client1.public_key
-// var private_key2 = client2.private_key,public_key2 = client2.public_key
+// var private_key_CA=ca.r,public_key_CA = ca.public_key
+// var private_key1 = client1.r,public_key1 = client1.public_key
+// var private_key2 = client2.r,public_key2 = client2.public_key
 //
 // cert1 = (create_cert('PI',public_key1,private_key_CA,public_key_CA))
 // cert2 = (create_cert('Server',public_key2,private_key_CA,public_key_CA))

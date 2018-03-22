@@ -3,6 +3,8 @@ var client  = mqtt.connect('http://broker.mqttdashboard.com:1883',{clientId:'huy
 var fs = require('fs');
 var ecc = require('../help/ECC/ECC')
 var crypto = require('crypto-js')
+var config = require('../config/config')
+
 client.subscribe('huytiep/certRPI',{ qos: 1,retain:false })
 
 module.exports = function (socket) {
@@ -30,13 +32,21 @@ module.exports = function (socket) {
                     case "huytiep/certRPI":
                         var nonceServer = Math.random().toString(16).substr(2, 8)
                         templ = nonceServer
-                        var certServer = fs.readFileSync('routes/cert_Server')
-                        certServer = JSON.parse(certServer.toString())
-                        var privateServer = ecc.create_key_to_cert(certServer.private_key,certServer.cert)
+                        var strCertServer = fs.readFileSync(config.root_dir+config.jwt.cert).toString()
+                        var certServer  = crypto.AES.decrypt(strCertServer, config.jwt.password);
+                        var plaintext = certServer.toString(crypto.enc.Utf8);
+                        certServer = JSON.parse(plaintext)
+
+                        var strR = fs.readFileSync(config.root_dir+config.jwt.r).toString()
+                        var rServer  = crypto.AES.decrypt(strR, config.jwt.password);
+                        var plaintext = rServer.toString(crypto.enc.Utf8);
+                        rServer = JSON.parse(plaintext)
+
+                        var privateServer = ecc.create_key_to_cert(rServer,certServer)
 
                         var dataSend = {
                             nonceServer:nonceServer,
-                            certServer:certServer.cert,
+                            certServer:certServer,
                             flag:'certServer'
                         }
 
@@ -47,7 +57,7 @@ module.exports = function (socket) {
 
                         pKey = ecc.scalar_mult(privateServer,ecc.x_to_Point(publicKeyRPI))
                         pKey = crypto.PBKDF2(pKey[0].toString(),templ+certRPI.noncePI).toString();
-                        macAuthen = JSON.stringify(certServer.cert)+','
+                        macAuthen = JSON.stringify(certServer)+','
                             +JSON.stringify(certRPI.certRPI)+','
                             +templ+','
                             +certRPI.noncePI
@@ -83,6 +93,21 @@ module.exports = function (socket) {
 };
 
 
-
+//
+// //
+// //
+// // // Encrypt
+// var string = fs.readFileSync(config.root_dir+config.jwt.r).toString()
+// // var ciphertext = crypto.AES.encrypt('115384283877462498079275081838378639864540036102372508519365666259500077010086', 'Aa23456');
+// // console.log(ciphertext.toString())
+// // // Decrypt
+// var r  = crypto.AES.decrypt(string, 'Aa123456');
+// var plaintext = r.toString(crypto.enc.Utf8);
+// console.log(JSON.parse(plaintext))
+// var cert  = CryptoJS.AES.decrypt('U2FsdGVkX1/FwwG/qNIxdnLhkBBQiPoSiGKgtY/zdf6vz1YeLWfBTg6iTKCPpah0G+1EqT9n3hxBsxEJB3sLQ1dHA7TDtyIUaZlqDAUlMYvYmobrAlQzo+0fbCbP0E9IRmLmnzPWsMqCiRVXW3K9MTXbzOzcj/I9R0zkqUOpM98huB7NbV0Cj+kj3irWep7baSUD4KGWWl0WKzF8aIjOjpxc92+1uUKs+iayy+JDlNwdH8+aho5J/JTvNsgYR5wD07r+73KPrt6H2uvYVmBi5biR1K0Rwnoroc43zp//uIM3yi5c3EORUyPR6TO/SwvSP0D8JrasZkQ2Rzrv+bXpe8/dldZSgCgB3FFLqcD9JbI4veyByUc0Z6sCWoPv+rk3HEKG3sUUO67wsrv4oyPkGWBRCs1tmFhw6e6RYZtRsIU=', 'Aa123456');
+// var plaintext_cert = cert.toString(CryptoJS.enc.Utf8);
+//
+// var key = ecc.create_key_to_cert(plaintext,JSON.parse(plaintext_cert))
+// console.log(key);
 
 
